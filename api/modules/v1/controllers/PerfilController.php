@@ -29,6 +29,19 @@ class PerfilController extends Controller
                 ],
             ]
         );
+
+        $behaviors = parent::behaviors();
+
+        // add CORS filter
+        $behaviors['corsFilter'] = [
+            'class' => \yii\filters\Cors::class,
+        ];
+        return $behaviors;
+
+        // re-add authentication filter
+        $behaviors['authenticator'] = $auth;
+        // avoid authentication on CORS-pre-flight requests (HTTP OPTIONS method)
+        $behaviors['authenticator']['except'] = ['options'];
     }
 
     /**
@@ -41,7 +54,7 @@ class PerfilController extends Controller
         $searchModel = new PerfilSearch();
         $dataProvider = $searchModel->search($this->request->queryParams);
 
-        return $this->render('index', [
+        return $this->render('/perfil/index', [
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
         ]);
@@ -55,7 +68,7 @@ class PerfilController extends Controller
      */
     public function actionView($idperfil)
     {
-        return $this->render('view', [
+        return $this->render('/perfil/view', [
             'model' => $this->findModel($idperfil),
         ]);
     }
@@ -71,13 +84,13 @@ class PerfilController extends Controller
 
         if ($this->request->isPost) {
             if ($model->load($this->request->post()) && $model->save()) {
-                return $this->redirect(['view', 'idperfil' => $model->idperfil]);
+                return $this->redirect(['/perfil/view', 'idperfil' => $model->idperfil]);
             }
         } else {
             $model->loadDefaultValues();
         }
 
-        return $this->render('create', [
+        return $this->render('/perfil/create', [
             'model' => $model,
         ]);
     }
@@ -94,10 +107,10 @@ class PerfilController extends Controller
         $model = $this->findModel($idperfil);
 
         if ($this->request->isPost && $model->load($this->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'idperfil' => $model->idperfil]);
+            return $this->redirect(['/perfil/view', 'idperfil' => $model->idperfil]);
         }
 
-        return $this->render('update', [
+        return $this->render('/perfil/update', [
             'model' => $model,
         ]);
     }
@@ -113,7 +126,7 @@ class PerfilController extends Controller
     {
         $this->findModel($idperfil)->delete();
 
-        return $this->redirect(['index']);
+        return $this->redirect(['/perfil/index']);
     }
 
     /**

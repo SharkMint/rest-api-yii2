@@ -1,9 +1,11 @@
 <?php
 
 namespace api\modules\v1\controllers;
+use yii\filters\auth\HttpBasicAuth;
 
 use api\modules\v1\models\Client;
 use api\modules\v1\models\ClientSearch;
+use yii\filters\Cors;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -13,9 +15,12 @@ use yii\filters\VerbFilter;
  */
 class ClientController extends Controller
 {
+    public $enableCsrfValidation = false;
     /**
      * @inheritDoc
      */
+
+    private $_verbs = ['GET','POST','PATCH','PUT','DELETE'];
     public function behaviors()
     {
         return array_merge(
@@ -29,6 +34,22 @@ class ClientController extends Controller
                 ],
             ]
         );
+
+        $behaviors = parent::behaviors();
+
+        // add CORS filter
+        $behaviors['corsFilter'] = [
+            'class' => Cors::class,
+            'Origin' => ['*'],
+            'Access-Control-Allow-Origin' => ['http://localhost:3000'],
+            'Access-Control-Request-Method' => $this->_verbs,
+            'Access-Control-Request-Headers' => ['X-Wsse'],
+            'Access-Control-Allow-Credentials' => true,
+            'Access-Control-Max-Age' => 3600,
+            'Access-Control-Expose-Headers' => ['X-Pagination-Current-Page'],
+        ];
+        return $behaviors;
+
     }
 
     /**
@@ -41,7 +62,7 @@ class ClientController extends Controller
         $searchModel = new ClientSearch();
         $dataProvider = $searchModel->search($this->request->queryParams);
 
-        return $this->render('index', [
+        return $this->render('/client/index', [
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
         ]);
@@ -55,7 +76,7 @@ class ClientController extends Controller
      */
     public function actionView($idclient)
     {
-        return $this->render('view', [
+        return $this->render('/client/view', [
             'model' => $this->findModel($idclient),
         ]);
     }
@@ -71,13 +92,13 @@ class ClientController extends Controller
 
         if ($this->request->isPost) {
             if ($model->load($this->request->post()) && $model->save()) {
-                return $this->redirect(['view', 'idclient' => $model->idclient]);
+                return $this->redirect(['/client/view', 'idclient' => $model->idclient]);
             }
         } else {
             $model->loadDefaultValues();
         }
 
-        return $this->render('create', [
+        return $this->render('/client/create', [
             'model' => $model,
         ]);
     }
@@ -94,10 +115,10 @@ class ClientController extends Controller
         $model = $this->findModel($idclient);
 
         if ($this->request->isPost && $model->load($this->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'idclient' => $model->idclient]);
+            return $this->redirect(['/client/view', 'idclient' => $model->idclient]);
         }
 
-        return $this->render('update', [
+        return $this->render('/client/update', [
             'model' => $model,
         ]);
     }
@@ -113,7 +134,7 @@ class ClientController extends Controller
     {
         $this->findModel($idclient)->delete();
 
-        return $this->redirect(['index']);
+        return $this->redirect(['/client/index']);
     }
 
     /**

@@ -29,6 +29,16 @@ class AddressController extends Controller
                 ],
             ]
         );
+
+        $behaviors = parent::behaviors();
+
+        // add CORS filter
+        $behaviors['corsFilter'] = [
+            'class' => \yii\filters\Cors::class,
+        ];
+        return $behaviors;
+
+
     }
 
     /**
@@ -41,7 +51,7 @@ class AddressController extends Controller
         $searchModel = new AddressSearch();
         $dataProvider = $searchModel->search($this->request->queryParams);
 
-        return $this->render('index', [
+        return $this->render('/address/index', [
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
         ]);
@@ -55,7 +65,7 @@ class AddressController extends Controller
      */
     public function actionView($idaddress)
     {
-        return $this->render('view', [
+        return $this->render('/api/views/address/view', [
             'model' => $this->findModel($idaddress),
         ]);
     }
@@ -71,13 +81,13 @@ class AddressController extends Controller
 
         if ($this->request->isPost) {
             if ($model->load($this->request->post()) && $model->save()) {
-                return $this->redirect(['view', 'idaddress' => $model->idaddress]);
+                return $this->redirect(['/address/view', 'idaddress' => $model->idaddress]);
             }
         } else {
             $model->loadDefaultValues();
         }
 
-        return $this->render('create', [
+        return $this->render('/address/create', [
             'model' => $model,
         ]);
     }
@@ -94,10 +104,10 @@ class AddressController extends Controller
         $model = $this->findModel($idaddress);
 
         if ($this->request->isPost && $model->load($this->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'idaddress' => $model->idaddress]);
+            return $this->redirect(['/address/view', 'idaddress' => $model->idaddress]);
         }
 
-        return $this->render('update', [
+        return $this->render('/address/update', [
             'model' => $model,
         ]);
     }
@@ -113,7 +123,7 @@ class AddressController extends Controller
     {
         $this->findModel($idaddress)->delete();
 
-        return $this->redirect(['index']);
+        return $this->redirect(['/api/views/address/index']);
     }
 
     /**
